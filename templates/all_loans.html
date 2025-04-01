@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>All Loan Schemes - Buddy Loan</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/all_loans.css') }}">
+</head>
+<body>
+
+<!-- ✅ Fixed Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+  <div class="container">
+    <a class="navbar-brand fw-bold" href="{{ url_for('home') }}">Buddy Loan</a>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto">
+        {% if session['user_name'] %}
+        <li class="nav-item">
+          <a class="nav-link text-light" href="{{ url_for('profile') }}">Welcome, {{ session['user_name'] }}</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link text-light" href="{{ url_for('logout') }}">Logout</a>
+        </li>
+        {% else %}
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('login') }}">Login</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('signup') }}">Signup</a>
+        </li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- ✅ Loan Schemes Content -->
+<div class="container loan-section mt-5 pt-5">
+  <h2 class="text-center mb-4">ALL LOAN SCHEMES</h2>
+
+  {% for scheme, loans in grouped_loans.items() %}
+  <div class="mb-5">
+    <h4 class="text-primary">{{ scheme }}</h4>
+    <div class="table-responsive">
+      <table class="table table-bordered table-striped">
+        <thead class="table-dark">
+          <tr>
+            <th>Bank</th>
+            <th>Interest Rate (%)</th>
+            <th>Max Loan Amount</th>
+            <th>Tenure (months)</th>
+            <th>Monthly EMI</th>
+            <th>Processing Fee</th>
+            <th>Prepayment Penalty</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for loan in loans %}
+          <tr>
+            <td>{{ loan.bank }}</td>
+            <td>{{ loan.interestRate }}</td>
+            <td>₹{{ loan.maxLoanAmount }}</td>
+            <td>{{ loan.tenure }}</td>
+            <td>₹{{ loan.monthlyEMI }}</td>
+            <td>₹{{ loan.processingFee }}</td>
+            <td>{{ loan.prepaymentPenalty }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

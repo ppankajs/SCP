@@ -10,14 +10,17 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
             <a class="navbar-brand fw-bold d-flex align-items-center" href="{{ url_for('home') }}">
-                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" height="40" class="me-2">
+                <!-- <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" height="40" class="me-2"> -->
                 Buddy Loan
             </a>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     {% if user_name %}
                         <li class="nav-item">
-                            <span class="nav-link text-light">Welcome, {{ user_name }}</span>
+                            <a href="{{ url_for('all_loans') }}" class="btn btn-outline-info">View All Loan Schemes</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-light" href="{{ url_for('profile') }}">Welcome, {{ user_name }}</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link btn btn-danger text-white" href="{{ url_for('logout') }}">Logout</a>
@@ -37,6 +40,34 @@
 
     <div class="container mt-5">
         <h1 class="text-center">Welcome to Loan Application</h1>
+
+        {% if loans %}
+            <div class="mt-4">
+                <h3 class="text-center mb-4">Available Loans</h3>
+                <div class="row">
+                    {% for loan in loans %}
+                        <div class="col-md-4">
+                            <div class="card mb-4">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ loan.bank }}</h5>
+                                    <p class="card-text">
+                                        <strong>Interest Rate:</strong> {{ loan.interestRate }}%<br>
+                                        <strong>Max Loan Amount:</strong> {{ loan.maxLoanAmount }}<br>
+                                        <strong>Tenure:</strong> {{ loan.tenure }} months<br>
+                                        <strong>Scheme:</strong> {{ loan.scheme }}
+                                    </p>
+                                    <a href="{{ url_for('show_all_properties') }}" class="btn btn-primary">View All Properties</a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% else %}
+            <p class="text-center">No loans available at the moment.</p>
+        {% endif %}
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

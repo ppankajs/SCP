@@ -39,18 +39,132 @@ body {
     background: rgba(255, 255, 255, 0.1);
 }
 
-/* Banner Styling */
-/* .banner {
+/* Loan Section Styling */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Heading */
+h1 {
+    color: #333;
+    text-transform: uppercase;
+    margin-bottom: 30px;
+}
+
+/* Loans Display */
+.mt-4 {
+    margin-top: 40px;
+}
+
+.card {
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    transform: translateY(-10px);
+}
+
+.card-body {
+    padding: 20px;
+}
+
+.card-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #333;
+}
+
+.card-text {
+    font-size: 1rem;
+    color: #555;
+    margin-bottom: 20px;
+}
+
+.card-text strong {
+    color: #000;
+}
+
+/* Button Styling */
+.btn-primary {
+    background-color: #0044cc;
+    border-color: #0044cc;
+    border-radius: 25px;
+    padding: 10px 25px;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    background-color: #0033aa;
+    border-color: #0033aa;
+    transform: scale(1.05);
+}
+
+/* Grid Layout for Loan Cards */
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.col-md-4 {
+    width: 100%;
+    max-width: 33.33%;
+    box-sizing: border-box;
+    margin-bottom: 20px;
+}
+
+/* Media Queries for Responsiveness */
+@media (max-width: 992px) {
+    .col-md-4 {
+        max-width: 50%;
+    }
+}
+
+@media (max-width: 768px) {
+    .col-md-4 {
+        max-width: 100%;
+    }
+
+    .card {
+        margin-bottom: 20px;
+    }
+
+    h1 {
+        font-size: 1.8rem;
+    }
+}
+
+/* No Loans Message */
+.text-center {
+    text-align: center;
+}
+
+.text-center p {
+    font-size: 1.2rem;
+    color: #555;
+    margin-top: 20px;
+}
+
+/* Custom Background for Banner (Optional) */
+.banner {
     position: relative;
     width: 100%;
     height: 500px;
-    background: url("{{ url_for('static', filename='background.jpeg') }}") no-repeat center center/cover;
+    background: url("{{ url_for('static', filename='images/background.jpeg') }}") no-repeat center center/cover;
     display: flex;
     justify-content: center;
     align-items: center;
     text-align: center;
     color: white;
-} */
+}
 
 .overlay {
     background: rgba(0, 0, 0, 0.6);
@@ -67,16 +181,4 @@ body {
 .overlay p {
     font-size: 1.2rem;
     font-style: italic;
-}
-
-/* Buttons */
-.btn-primary, .btn-danger {
-    border-radius: 30px;
-    padding: 10px 20px;
-    transition: all 0.3s ease-in-out;
-}
-
-.btn-primary:hover {
-    background-color: #0044cc;
-    transform: scale(1.05);
 }

@@ -45,59 +45,71 @@ class User(db.Model):
     name = db.Column(db.String(120), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
+    
+class Purchase(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey('user.id', name='fk_purchase_user'),
+        nullable=False
+    )
+    property_name = db.Column(db.String, nullable=False)
+    price = db.Column(db.Float, nullable=False)
+    location = db.Column(db.String, nullable=False)
+    property_type = db.Column(db.String, nullable=False)
+    loan_id = db.Column(
+        db.String,
+        db.ForeignKey('loan.loanId', name='fk_purchase_loan'),
+        nullable=True
+    )
+    loan = db.relationship('Loan')
+
 
 # Create tables in the database (if they don't already exist)
 with app.app_context():
     db.create_all()
-
-# Strict Name, Email, and Password Validation
-# @app.route('/signup', methods=['GET', 'POST'])
-# def signup():
-#     if request.method == 'GET':
-#         return render_template('signup.html')
-
-#     data = request.form
-#     name = data.get('name')
-#     email = data.get('email')
-#     password = data.get('password')
     
-#     if not name or not email or not password:
-#         flash("All fields are required", "danger")
-#         return redirect(url_for('signup'))
+    
+from functools import wraps
 
-#     # Strict Name Validation (Only Alphabets)
-#     if not re.match(r'^[A-Za-z ]+$', name):  
-#         flash('Name must contain only alphabets.', 'danger')
-#         return redirect(url_for('signup'))
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user_id' not in session:
+            flash("You need to be logged in to access this page.", "warning")
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
 
-#     # Strict Email Validation
-#     email_regex = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
-#     if not re.match(email_regex, email):
-#         flash('Invalid email address format. Please enter a valid email.', 'danger')
-#         return redirect(url_for('signup'))
 
-#     # Password Complexity Validation
-#     password_regex = r'^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$'
-#     if not re.match(password_regex, password):
-#         flash('Password must contain at least one uppercase letter, one number, one special character, and be at least 6 characters long.', 'danger')
-#         return redirect(url_for('signup'))
+@app.route('/buy-property', methods=['POST'])
+@login_required
+def buy_property():
+    user_id = session['user_id']
+    property_name = request.form.get('property_name')
+    price = float(request.form.get('price'))
+    location = request.form.get('location')
+    property_type = request.form.get('property_type')
+    loan_id = request.form.get('loan_id')  # use selected loan_id from form
 
-#     # Check if Email Already Exists
-#     if User.query.filter_by(email=email).first():
-#         flash('User already exists. Please log in.', 'warning')
-#         return redirect(url_for('login'))
+    new_purchase = Purchase(
+        user_id=user_id,
+        property_name=property_name,
+        price=price,
+        location=location,
+        property_type=property_type,
+        loan_id=loan_id
+    )
 
-#     # Hash Password & Store User
-#     hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
-#     new_user = User(name=name, email=email, password=hashed_password)
+    db.session.add(new_purchase)
+    db.session.commit()
+    flash("Property purchased successfully!", "success")
+    return redirect(url_for('profile'))
 
-#     db.session.add(new_user)
-#     db.session.commit()
 
-#     flash('Registration successful! Please login.', 'success')
-#     return redirect(url_for('login'))  # Redirect after successful signup
-
-EMAIL_API_URL = "http://GenericEmailSendingApi-env.eba-34zkmvsr.us-east-1.elasticbeanstalk.com/api/sendemail"
+# API URLs and Tokens
+SUBSCRIPTION_EMAIL = "http://GenericEmailSendingApi-env.eba-34zkmvsr.us-east-1.elasticbeanstalk.com/api/subscribe"
+SEND_EMAIL = "http://GenericEmailSendingApi-env.eba-34zkmvsr.us-east-1.elasticbeanstalk.com/api/sendemail"
 BEARER_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImlhdCI6MTc0MTY1NDQyOX0.FKCNiMFGrS5SR45kBxp6fbglPx5CXmrHH56GjqXQeRY"
 
 @app.route('/signup', methods=['GET', 'POST'])
@@ -109,12 +121,12 @@ def signup():
     name = data.get('name')
     email = data.get('email')
     password = data.get('password')
-    
+
     if not name or not email or not password:
         flash("All fields are required", "danger")
         return redirect(url_for('signup'))
 
-    if not re.match(r'^[A-Za-z ]+$', name):  
+    if not re.match(r'^[A-Za-z ]+$', name):
         flash('Name must contain only alphabets.', 'danger')
         return redirect(url_for('signup'))
 
@@ -134,34 +146,26 @@ def signup():
 
     hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
     new_user = User(name=name, email=email, password=hashed_password)
-
     db.session.add(new_user)
     db.session.commit()
 
-    # 📧 **Send Email Notification**
-    email_payload = {
-        "to": email,
-        "subject": "Welcome to Our Platform",
-        "body": f"Hello {name},\n\nThank you for signing up! We're excited to have you on board.\n\nBest regards,\nYour Team"
-    }
-
-    headers = {
-        "Authorization": f"Bearer {BEARER_TOKEN}",
-        "Content-Type": "application/json"
-    }
-
     try:
-        response = requests.post(EMAIL_API_URL, json=email_payload, headers=headers)
-        if response.status_code == 200:
-            flash("Registration successful! A confirmation email has been sent.", "success")
+        sub_resp = requests.post(
+            SUBSCRIPTION_EMAIL,
+            json={"email": email, "userId": new_user.id},
+            headers={
+                "Authorization": f"Bearer {BEARER_TOKEN}",
+                "Content-Type": "application/json"
+            }
+        )
+        if sub_resp.status_code == 200:
+            flash("Subscribed to notifications.", "info")
         else:
-            flash("Registration successful, but email sending failed.", "warning")
+            flash("Signup success, but subscription failed.", "warning")
     except Exception as e:
-        flash(f"Registration successful, but email sending failed. Error: {str(e)}", "warning")
+        flash(f"Signup success, but subscription error: {str(e)}", "warning")
 
     return redirect(url_for('login'))
-
-
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -176,13 +180,35 @@ def login():
         flash("Invalid credentials", "danger")
         return redirect(url_for('login'))
 
-    # Store user info in session
     session['user_id'] = user.id
     session['user_name'] = user.name
     flash("Login successful!", "success")
 
-    return redirect(url_for('home'))
+    try:
+        email_data = {
+            "userId": user.id,
+            "email": email,
+            "subject": "Welcome Back to Buddy Loan",
+            "message": f"Hello {user.name},\n\nYou have successfully logged in to Buddy Loan.\n\nIf this wasn't you, please reset your password.\n\nCheers,\nBuddy Loan Team"
+        }
+        email_resp = requests.post(
+            SEND_EMAIL,
+            json=email_data,
+            headers={
+                "Authorization": f"Bearer {BEARER_TOKEN}",
+                "Content-Type": "application/json"
+            }
+        )
+        
+        print("🔁 Subscription Response Code:", email_resp.status_code)
+        print("🔁 Subscription Response Body:", email_resp.text)
+        
+        if email_resp.status_code != 200:
+            flash("Login email failed to send.", "warning")
+    except Exception as e:
+        flash(f"Logged in, but email error: {str(e)}", "warning")
 
+    return redirect(url_for('home'))
 
 @app.route('/logout')
 def logout():
@@ -203,9 +229,7 @@ def login_required(f):
     return decorated_function
 
 
-# @app.route('/')
-# def home():
-#     return render_template('home.html', user_name=session.get('user_name'))
+PROPERTY_API_URL = "http://property-recommendation-env.eba-bc2bsfwz.us-east-1.elasticbeanstalk.com/recommend"
 
 @app.route('/')
 def home():
@@ -218,13 +242,32 @@ def home():
 
     return render_template('home.html', user_name=session.get('user_name'), loans=loans)
 
+@app.route('/properties')
+@login_required
+def show_all_properties():
+    try:
+        response = requests.get(PROPERTY_API_URL, timeout=10)
+        if response.status_code != 200:
+            flash("Failed to fetch properties", "danger")
+            return redirect(url_for('home'))
 
-# Protected route (accessible only if logged in)
+        properties = response.json()
+        loans = Loan.query.all()  # Make sure this is included
+
+        return render_template('select_property.html', properties=properties, loans=loans)
+    
+    except requests.exceptions.RequestException as e:
+        flash(f"Error fetching properties: {str(e)}", "danger")
+        return redirect(url_for('home'))
+
+
+
 @app.route('/profile')
 @login_required
 def profile():
-    return render_template('profile.html', name=session.get('user_name'))
-
+    user = User.query.get(session['user_id'])
+    purchases = Purchase.query.filter_by(user_id=user.id).all()
+    return render_template('profile.html', user=user, purchases=purchases)
 
 # Loan details endpoint
 @app.route('/loan-details/add', methods=['POST'])
@@ -287,6 +330,39 @@ def get_loans_by_scheme():
         })
 
     return jsonify({"status": 200, "loans": loan_data}), 200
+
+def recommend_scheme(property_price):
+    suitable_loans = Loan.query.filter(Loan.maxLoanAmount >= property_price).order_by(Loan.interestRate.asc()).all()
+    if suitable_loans:
+        return suitable_loans[0]  # Return best suited loan
+    return None
+
+@app.route('/delete-purchase/<int:purchase_id>', methods=['POST'])
+@login_required
+def delete_purchase(purchase_id):
+    purchase = Purchase.query.get_or_404(purchase_id)
+
+    # Ensure the logged-in user owns this purchase
+    if purchase.user_id != session['user_id']:
+        flash("You are not authorized to delete this purchase.", "danger")
+        return redirect(url_for('profile'))
+
+    db.session.delete(purchase)
+    db.session.commit()
+    flash("Property purchase deleted successfully.", "success")
+    return redirect(url_for('profile'))
+
+@app.route('/all-loans', methods=['GET'])
+def all_loans():
+    # Fetch all loans grouped by scheme
+    loans = Loan.query.all()
+
+    # Organize them into a dictionary: { scheme_name: [loan1, loan2, ...] }
+    grouped_loans = {}
+    for loan in loans:
+        grouped_loans.setdefault(loan.scheme, []).append(loan)
+
+    return render_template('all_loans.html', grouped_loans=grouped_loans)
 
 
 if __name__ == '__main__':

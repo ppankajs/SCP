@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Select Property</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/select_property.css') }}">
+</head>
+<body>
+    <nav class="navbar navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('home') }}">Buddy Loan</a>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <h2 class="text-center">Select a Property</h2>
+
+        <div class="row">
+            {% for property in properties %}
+            <div class="col-md-4">
+              <div class="card property-card mb-4">
+                <div class="card-body">
+                  <h5 class="card-title">{{ property.name }}</h5>
+                  <p class="card-text">
+                    <strong>Type:</strong> {{ property.type }}<br>
+                    <strong>Location:</strong> {{ property.location }}<br>
+                    <strong>Price:</strong> {{ property.price }}
+                  </p>
+
+                  <!-- Loan Options Toggle -->
+                  <button class="btn btn-primary w-100 mb-2" type="button" data-bs-toggle="collapse" data-bs-target="#loanOptions{{ loop.index }}" aria-expanded="false">
+                    Select Loan Scheme
+                  </button>
+
+                  <!-- Collapsible Loan Section -->
+                  <div class="collapse" id="loanOptions{{ loop.index }}">
+                    {% for loan in loans %}
+                      <form method="POST" action="{{ url_for('buy_property') }}" class="border rounded p-2 mb-2">
+                        <input type="hidden" name="property_name" value="{{ property.name }}">
+                        <input type="hidden" name="price" value="{{ property.price }}">
+                        <input type="hidden" name="location" value="{{ property.location }}">
+                        <input type="hidden" name="property_type" value="{{ property.type }}">
+                        <input type="hidden" name="loan_id" value="{{ loan.loanId }}">
+
+                        <p class="mb-1"><strong>{{ loan.scheme }}</strong> by {{ loan.bank }}</p>
+                        <ul class="small">
+                          <li>Interest Rate: {{ loan.interestRate }}%</li>
+                          <li>Max Loan: {{ loan.maxLoanAmount }}</li>
+                          <li>Tenure: {{ loan.tenure }}</li>
+                          <li>EMI: {{ loan.monthlyEMI }}</li>
+                          <li>Processing Fee: {{ loan.processingFee }}</li>
+                          <li>Prepayment Penalty: {{ loan.prepaymentPenalty }}</li>
+                        </ul>
+
+                        <button type="submit" class="btn btn-success btn-sm">Choose This Loan</button>
+                      </form>
+                    {% endfor %}
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

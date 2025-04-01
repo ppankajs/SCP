@@ -1,0 +1,89 @@
+/* Apply consistent styling like home.css */
+body {
+    font-family: "Poppins", sans-serif;
+    background-color: #f8f9fa;
+    margin: 0;
+    padding: 0;
+}
+
+/* Navbar matches home.html */
+.navbar {
+    padding: 15px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-brand {
+    font-size: 1.7rem;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+}
+
+.navbar-nav .nav-link {
+    font-weight: 600;
+    transition: color 0.3s;
+    padding: 10px 15px;
+    border-radius: 5px;
+}
+
+.navbar-nav .nav-link:hover {
+    color: #f8d210 !important;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Main content area */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 30px;
+}
+
+/* Card container */
+.card-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+}
+
+/* Card styling */
+.card {
+    background: #ffffff;
+    border: none;
+    border-radius: 10px;
+    padding: 1.5rem;
+    width: calc(50% - 1rem);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transition: 0.3s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.card-title {
+    font-size: 1.25rem;
+    font-weight: bold;
+}
+
+.card-text {
+    color: #333;
+    font-size: 0.95rem;
+}
+
+/* Loan section highlight */
+.text-warning {
+    color: #e67e22;
+    font-weight: bold;
+}
+
+/* Button tweaks */
+.btn-sm {
+    padding: 0.35rem 0.9rem;
+    font-size: 0.875rem;
+}
+
+@media (max-width: 768px) {
+    .card {
+        width: 100%;
+    }
+}
